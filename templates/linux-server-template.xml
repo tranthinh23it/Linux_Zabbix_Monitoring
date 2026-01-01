@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>6.4</version>
+    <date>2024-01-01T00:00:00Z</date>
+    <templates>
+        <template>
+            <uuid>12345678-1234-1234-1234-123456789012</uuid>
+            <template>Linux Server Advanced</template>
+            <name>Linux Server Advanced Template</name>
+            <description>Advanced Linux server monitoring template with custom metrics</description>
+            <groups>
+                <group>
+                    <name>Templates/Operating systems</name>
+                </group>
+            </groups>
+            <items>
+                <!-- CPU Metrics -->
+                <item>
+                    <uuid>cpu-usage-001</uuid>
+                    <name>CPU Usage</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>system.cpu.util</key>
+                    <delay>60s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>CPU utilization percentage</description>
+                </item>
+                
+                <item>
+                    <uuid>cpu-load-001</uuid>
+                    <name>Load Average (1m)</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>system.cpu.load[percpu,avg1]</key>
+                    <delay>60s</delay>
+                    <value_type>FLOAT</value_type>
+                    <description>Load average per CPU for last minute</description>
+                </item>
+
+                <!-- Memory Metrics -->
+                <item>
+                    <uuid>mem-usage-001</uuid>
+                    <name>Memory Usage</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>vm.memory.util</key>
+                    <delay>60s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Memory utilization percentage</description>
+                </item>
+
+                <item>
+                    <uuid>mem-available-001</uuid>
+                    <name>Available Memory</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>vm.memory.size[available]</key>
+                    <delay>60s</delay>
+                    <value_type>UINT64</value_type>
+                    <units>B</units>
+                    <description>Available memory in bytes</description>
+                </item>
+
+                <!-- Disk Metrics -->
+                <item>
+                    <uuid>disk-usage-001</uuid>
+                    <name>Root Filesystem Usage</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>vfs.fs.size[/,pused]</key>
+                    <delay>300s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Root filesystem usage percentage</description>
+                </item>
+
+                <item>
+                    <uuid>disk-io-read-001</uuid>
+                    <name>Disk Read Rate</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>vfs.dev.read[,ops]</key>
+                    <delay>60s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>ops</units>
+                    <description>Disk read operations per second</description>
+                </item>
+
+                <!-- Network Metrics -->
+                <item>
+                    <uuid>net-in-001</uuid>
+                    <name>Network In</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>net.if.in[eth0]</key>
+                    <delay>60s</delay>
+                    <value_type>UINT64</value_type>
+                    <units>bps</units>
+                    <description>Incoming network traffic</description>
+                    <preprocessing>
+                        <step>
+                            <type>CHANGE_PER_SECOND</type>
+                        </step>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>8</params>
+                        </step>
+                    </preprocessing>
+                </item>
+
+                <!-- Custom Metrics -->
+                <item>
+                    <uuid>custom-temp-001</uuid>
+                    <name>CPU Temperature</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>system.cpu.temperature</key>
+                    <delay>120s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>°C</units>
+                    <description>CPU temperature in Celsius</description>
+                </item>
+
+                <item>
+                    <uuid>custom-processes-001</uuid>
+                    <name>Process Count</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>system.process.count</key>
+                    <delay>300s</delay>
+                    <value_type>UINT64</value_type>
+                    <description>Total number of processes</description>
+                </item>
+
+                <item>
+                    <uuid>custom-connections-001</uuid>
+                    <name>Network Connections</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>system.network.connections</key>
+                    <delay>300s</delay>
+                    <value_type>UINT64</value_type>
+                    <description>Number of established network connections</description>
+                </item>
+            </items>
+
+            <triggers>
+                <!-- CPU Triggers -->
+                <trigger>
+                    <uuid>trigger-cpu-001</uuid>
+                    <expression>last(/Linux Server Advanced/system.cpu.util)&gt;80</expression>
+                    <name>High CPU Usage on {HOST.NAME}</name>
+                    <priority>WARNING</priority>
+                    <description>CPU usage is above 80%</description>
+                </trigger>
+
+                <trigger>
+                    <uuid>trigger-cpu-002</uuid>
+                    <expression>last(/Linux Server Advanced/system.cpu.util)&gt;95</expression>
+                    <name>Critical CPU Usage on {HOST.NAME}</name>
+                    <priority>HIGH</priority>
+                    <description>CPU usage is above 95%</description>
+                </trigger>
+
+                <!-- Memory Triggers -->
+                <trigger>
+                    <uuid>trigger-mem-001</uuid>
+                    <expression>last(/Linux Server Advanced/vm.memory.util)&gt;85</expression>
+                    <name>High Memory Usage on {HOST.NAME}</name>
+                    <priority>WARNING</priority>
+                    <description>Memory usage is above 85%</description>
+                </trigger>
+
+                <!-- Disk Triggers -->
+                <trigger>
+                    <uuid>trigger-disk-001</uuid>
+                    <expression>last(/Linux Server Advanced/vfs.fs.size[/,pused])&gt;90</expression>
+                    <name>Low Disk Space on {HOST.NAME}</name>
+                    <priority>WARNING</priority>
+                    <description>Root filesystem usage is above 90%</description>
+                </trigger>
+
+                <trigger>
+                    <uuid>trigger-disk-002</uuid>
+                    <expression>last(/Linux Server Advanced/vfs.fs.size[/,pused])&gt;95</expression>
+                    <name>Critical Disk Space on {HOST.NAME}</name>
+                    <priority>HIGH</priority>
+                    <description>Root filesystem usage is above 95%</description>
+                </trigger>
+
+                <!-- Temperature Trigger -->
+                <trigger>
+                    <uuid>trigger-temp-001</uuid>
+                    <expression>last(/Linux Server Advanced/system.cpu.temperature)&gt;70</expression>
+                    <name>High CPU Temperature on {HOST.NAME}</name>
+                    <priority>WARNING</priority>
+                    <description>CPU temperature is above 70°C</description>
+                </trigger>
+            </triggers>
+
+            <graphs>
+                <graph>
+                    <uuid>graph-cpu-001</uuid>
+                    <name>CPU Usage</name>
+                    <width>900</width>
+                    <height>200</height>
+                    <graph_items>
+                        <graph_item>
+                            <color>FF0000</color>
+                            <item>
+                                <host>Linux Server Advanced</host>
+                                <key>system.cpu.util</key>
+                            </item>
+                        </graph_item>
+                    </graph_items>
+                </graph>
+
+                <graph>
+                    <uuid>graph-mem-001</uuid>
+                    <name>Memory Usage</name>
+                    <width>900</width>
+                    <height>200</height>
+                    <graph_items>
+                        <graph_item>
+                            <color>00FF00</color>
+                            <item>
+                                <host>Linux Server Advanced</host>
+                                <key>vm.memory.util</key>
+                            </item>
+                        </graph_item>
+                    </graph_items>
+                </graph>
+
+                <graph>
+                    <uuid>graph-disk-001</uuid>
+                    <name>Disk Usage</name>
+                    <width>900</width>
+                    <height>200</height>
+                    <graph_items>
+                        <graph_item>
+                            <color>0000FF</color>
+                            <item>
+                                <host>Linux Server Advanced</host>
+                                <key>vfs.fs.size[/,pused]</key>
+                            </item>
+                        </graph_item>
+                    </graph_items>
+                </graph>
+            </graphs>
+        </template>
+    </templates>
+</zabbix_export>

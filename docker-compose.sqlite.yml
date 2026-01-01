@@ -1,0 +1,158 @@
+version: '3.8'
+
+# SQLite variant for Zabbix (lightweight, no external DB needed)
+services:
+  # Zabbix Server with SQLite
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:alpine-6.4-latest
+    container_name: zabbix-server-sqlite
+    restart: unless-stopped
+    environment:
+      # SQLite configuration
+      DB_SERVER_HOST: localhost
+      DB_SERVER_PORT: 0
+      ZBX_ENABLE_SNMP_TRAPS: "true"
+      ZBX_STARTPOLLERS: 3
+      ZBX_STARTPOLLERSUNREACHABLE: 1
+      ZBX_STARTTRAPPERS: 3
+      ZBX_STARTPINGERS: 1
+      ZBX_STARTDISCOVERERS: 1
+      ZBX_STARTHTTPPOLLERS: 1
+      ZBX_STARTTIMERS: 1
+      ZBX_STARTESCALATORS: 1
+      ZBX_STARTALERTERS: 2
+      ZBX_CACHESIZE: 4M
+      ZBX_CACHEUPDATEFREQUENCY: 60
+      ZBX_HISTORYCACHESIZE: 8M
+      ZBX_HISTORYINDEXCACHESIZE: 2M
+      ZBX_TRENDCACHESIZE: 2M
+      ZBX_VALUECACHESIZE: 4M
+    volumes:
+      - zabbix_server_data:/var/lib/zabbix
+      - zabbix_sqlite_data:/var/lib/zabbix/db
+      - ./configs/zabbix/alertscripts:/usr/lib/zabbix/alertscripts
+      - ./configs/zabbix/externalscripts:/usr/lib/zabbix/externalscripts
+      - ./configs/zabbix-sqlite/zabbix_server.conf:/etc/zabbix/zabbix_server.conf
+      - ./ssl:/var/lib/zabbix/ssl
+    networks:
+      - zabbix-net
+    ports:
+      - "10051:10051"
+
+  # Zabbix Web Interface with SQLite
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-mysql:alpine-6.4-latest
+    container_name: zabbix-web-sqlite
+    restart: unless-stopped
+    environment:
+      ZBX_SERVER_HOST: zabbix-server
+      DB_SERVER_HOST: localhost
+      DB_SERVER_PORT: 0
+      PHP_TZ: Asia/Ho_Chi_Minh
+      ZBX_SERVER_NAME: "Zabbix SQLite System"
+      ZBX_MAXEXECUTIONTIME: 600
+      ZBX_MEMORYLIMIT: 128M
+      ZBX_POSTMAXSIZE: 16M
+      ZBX_UPLOADMAXFILESIZE: 8M
+      ZBX_MAXINPUTTIME: 300
+    volumes:
+      - zabbix_sqlite_data:/var/lib/zabbix/db
+      - ./ssl:/etc/ssl/nginx
+      - ./configs/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./configs/zabbix-sqlite/zabbix.conf.php:/usr/share/zabbix/conf/zabbix.conf.php
+    networks:
+      - zabbix-net
+    ports:
+      - "80:8080"
+      - "443:8443"
+    depends_on:
+      - zabbix-server
+
+  # SQLite Browser (Web UI for SQLite)
+  sqlite-web:
+    image: coleifer/sqlite-web
+    container_name: zabbix-sqlite-web
+    restart: unless-stopped
+    environment:
+      SQLITE_DATABASE: /data/zabbix.db
+    volumes:
+      - zabbix_sqlite_data:/data
+    networks:
+      - zabbix-net
+    ports:
+      - "8083:8080"
+    depends_on:
+      - zabbix-server
+
+  # Zabbix Agent
+  zabbix-agent:
+    image: zabbix/zabbix-agent:alpine-6.4-latest
+    container_name: zabbix-agent-server
+    restart: unless-stopped
+    environment:
+      ZBX_HOSTNAME: "Zabbix SQLite Server"
+      ZBX_SERVER_HOST: zabbix-server
+      ZBX_SERVER_PORT: 10051
+      ZBX_PASSIVE_ALLOW: "true"
+      ZBX_ACTIVE_ALLOW: "true"
+      ZBX_DEBUGLEVEL: 3
+      ZBX_TIMEOUT: 4
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /dev:/host/dev:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - zabbix-net
+    ports:
+      - "10050:10050"
+    privileged: true
+    pid: host
+    depends_on:
+      - zabbix-server
+
+  # Grafana (lightweight config)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: zabbix-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+      GF_INSTALL_PLUGINS: alexanderzobnin-zabbix-app
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: alexanderzobnin-zabbix-datasource
+      GF_DATABASE_TYPE: sqlite3
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning
+      - ./dashboards/grafana:/var/lib/grafana/dashboards
+    networks:
+      - zabbix-net
+    ports:
+      - "3000:3000"
+    depends_on:
+      - zabbix-server
+
+  # Redis for caching
+  redis:
+    image: redis:alpine
+    container_name: zabbix-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - zabbix-net
+    ports:
+      - "6379:6379"
+
+volumes:
+  zabbix_server_data:
+  zabbix_sqlite_data:
+  grafana_data:
+  redis_data:
+
+networks:
+  zabbix-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

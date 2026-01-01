@@ -1,0 +1,312 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "System Overview Dashboard",
+    "tags": ["zabbix", "system", "monitoring"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "CPU Usage",
+        "type": "stat",
+        "targets": [
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "CPU utilization",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "red", "value": 90}
+              ]
+            },
+            "unit": "percent"
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Memory Usage",
+        "type": "stat",
+        "targets": [
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "Memory utilization",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 80},
+                {"color": "red", "value": 95}
+              ]
+            },
+            "unit": "percent"
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Disk Usage",
+        "type": "stat",
+        "targets": [
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "/ used space",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 80},
+                {"color": "red", "value": 90}
+              ]
+            },
+            "unit": "percent"
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "System Load",
+        "type": "stat",
+        "targets": [
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "Load average (1m avg)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 2},
+                {"color": "red", "value": 4}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "CPU Usage Over Time",
+        "type": "timeseries",
+        "targets": [
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "CPU utilization",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "gridPos": {"h": 9, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 6,
+        "title": "Memory Usage Over Time",
+        "type": "timeseries",
+        "targets": [
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "Memory utilization",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "gridPos": {"h": 9, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 7,
+        "title": "Network Traffic",
+        "type": "timeseries",
+        "targets": [
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "Interface eth0: Bits received",
+            "refId": "A"
+          },
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "Interface eth0: Bits sent",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "bps"
+          }
+        },
+        "gridPos": {"h": 9, "w": 12, "x": 0, "y": 17}
+      },
+      {
+        "id": 8,
+        "title": "Disk I/O",
+        "type": "timeseries",
+        "targets": [
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "Disk read rate",
+            "refId": "A"
+          },
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "Disk write rate",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "Bps"
+          }
+        },
+        "gridPos": {"h": 9, "w": 12, "x": 12, "y": 17}
+      },
+      {
+        "id": 9,
+        "title": "Docker Containers Status",
+        "type": "piechart",
+        "targets": [
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "Docker containers running",
+            "refId": "A"
+          },
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "Docker containers stopped",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 26}
+      },
+      {
+        "id": 10,
+        "title": "System Information",
+        "type": "table",
+        "targets": [
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "System uptime",
+            "refId": "A"
+          },
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "Number of logged in users",
+            "refId": "B"
+          },
+          {
+            "datasource": "Zabbix",
+            "group": "Linux servers",
+            "host": "Zabbix server",
+            "item": "Number of processes",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 16, "x": 8, "y": 26}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "schemaVersion": 30,
+    "version": 1
+  }
+}

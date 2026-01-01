@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>6.4</version>
+    <date>2024-01-01T00:00:00Z</date>
+    <templates>
+        <template>
+            <uuid>docker-123-456-789-012</uuid>
+            <template>Docker Monitoring</template>
+            <name>Docker Container Monitoring Template</name>
+            <description>Advanced Docker container and service monitoring</description>
+            <groups>
+                <group>
+                    <name>Templates/Applications</name>
+                </group>
+            </groups>
+            <items>
+                <!-- Docker Container Metrics -->
+                <item>
+                    <uuid>docker-containers-running</uuid>
+                    <name>Docker Containers Running</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.containers.running</key>
+                    <delay>60s</delay>
+                    <value_type>UINT64</value_type>
+                    <description>Number of running Docker containers</description>
+                </item>
+
+                <item>
+                    <uuid>docker-containers-total</uuid>
+                    <name>Docker Containers Total</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.containers.total</key>
+                    <delay>300s</delay>
+                    <value_type>UINT64</value_type>
+                    <description>Total number of Docker containers</description>
+                </item>
+
+                <item>
+                    <uuid>docker-containers-stopped</uuid>
+                    <name>Docker Containers Stopped</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.containers.stopped</key>
+                    <delay>300s</delay>
+                    <value_type>UINT64</value_type>
+                    <description>Number of stopped Docker containers</description>
+                </item>
+
+                <item>
+                    <uuid>docker-images-total</uuid>
+                    <name>Docker Images Total</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.images.total</key>
+                    <delay>600s</delay>
+                    <value_type>UINT64</value_type>
+                    <description>Total number of Docker images</description>
+                </item>
+
+                <item>
+                    <uuid>docker-volumes-total</uuid>
+                    <name>Docker Volumes Total</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.volumes.total</key>
+                    <delay>600s</delay>
+                    <value_type>UINT64</value_type>
+                    <description>Total number of Docker volumes</description>
+                </item>
+
+                <item>
+                    <uuid>docker-networks-total</uuid>
+                    <name>Docker Networks Total</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.networks.total</key>
+                    <delay>600s</delay>
+                    <value_type>UINT64</value_type>
+                    <description>Total number of Docker networks</description>
+                </item>
+
+                <!-- Specific Container Metrics -->
+                <item>
+                    <uuid>zabbix-server-cpu</uuid>
+                    <name>Zabbix Server CPU Usage</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.container.cpu[zabbix-server]</key>
+                    <delay>60s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>CPU usage of Zabbix Server container</description>
+                </item>
+
+                <item>
+                    <uuid>zabbix-server-memory</uuid>
+                    <name>Zabbix Server Memory Usage</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.container.memory[zabbix-server]</key>
+                    <delay>60s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Memory usage of Zabbix Server container</description>
+                </item>
+
+                <item>
+                    <uuid>mysql-cpu</uuid>
+                    <name>MySQL CPU Usage</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.container.cpu[zabbix-mysql]</key>
+                    <delay>60s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>CPU usage of MySQL container</description>
+                </item>
+
+                <item>
+                    <uuid>mysql-memory</uuid>
+                    <name>MySQL Memory Usage</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.container.memory[zabbix-mysql]</key>
+                    <delay>60s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Memory usage of MySQL container</description>
+                </item>
+
+                <item>
+                    <uuid>grafana-cpu</uuid>
+                    <name>Grafana CPU Usage</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.container.cpu[zabbix-grafana]</key>
+                    <delay>60s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>CPU usage of Grafana container</description>
+                </item>
+
+                <item>
+                    <uuid>grafana-memory</uuid>
+                    <name>Grafana Memory Usage</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>docker.container.memory[zabbix-grafana]</key>
+                    <delay>60s</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Memory usage of Grafana container</description>
+                </item>
+            </items>
+
+            <triggers>
+                <!-- Container Status Triggers -->
+                <trigger>
+                    <uuid>trigger-docker-001</uuid>
+                    <expression>last(/Docker Monitoring/docker.containers.running)&lt;5</expression>
+                    <name>Low Number of Running Containers on {HOST.NAME}</name>
+                    <priority>WARNING</priority>
+                    <description>Less than 5 containers are running</description>
+                </trigger>
+
+                <trigger>
+                    <uuid>trigger-docker-002</uuid>
+                    <expression>last(/Docker Monitoring/docker.containers.stopped)&gt;10</expression>
+                    <name>High Number of Stopped Containers on {HOST.NAME}</name>
+                    <priority>INFO</priority>
+                    <description>More than 10 containers are stopped</description>
+                </trigger>
+
+                <!-- Container Resource Triggers -->
+                <trigger>
+                    <uuid>trigger-zabbix-cpu</uuid>
+                    <expression>last(/Docker Monitoring/docker.container.cpu[zabbix-server])&gt;80</expression>
+                    <name>High CPU Usage in Zabbix Server Container</name>
+                    <priority>WARNING</priority>
+                    <description>Zabbix Server container CPU usage is above 80%</description>
+                </trigger>
+
+                <trigger>
+                    <uuid>trigger-mysql-cpu</uuid>
+                    <expression>last(/Docker Monitoring/docker.container.cpu[zabbix-mysql])&gt;70</expression>
+                    <name>High CPU Usage in MySQL Container</name>
+                    <priority>WARNING</priority>
+                    <description>MySQL container CPU usage is above 70%</description>
+                </trigger>
+
+                <trigger>
+                    <uuid>trigger-mysql-memory</uuid>
+                    <expression>last(/Docker Monitoring/docker.container.memory[zabbix-mysql])&gt;85</expression>
+                    <name>High Memory Usage in MySQL Container</name>
+                    <priority>WARNING</priority>
+                    <description>MySQL container memory usage is above 85%</description>
+                </trigger>
+            </triggers>
+
+            <graphs>
+                <graph>
+                    <uuid>graph-docker-containers</uuid>
+                    <name>Docker Container Status</name>
+                    <width>900</width>
+                    <height>200</height>
+                    <graph_items>
+                        <graph_item>
+                            <color>00FF00</color>
+                            <item>
+                                <host>Docker Monitoring</host>
+                                <key>docker.containers.running</key>
+                            </item>
+                        </graph_item>
+                        <graph_item>
+                            <color>FF0000</color>
+                            <item>
+                                <host>Docker Monitoring</host>
+                                <key>docker.containers.stopped</key>
+                            </item>
+                        </graph_item>
+                    </graph_items>
+                </graph>
+
+                <graph>
+                    <uuid>graph-container-cpu</uuid>
+                    <name>Container CPU Usage</name>
+                    <width>900</width>
+                    <height>200</height>
+                    <graph_items>
+                        <graph_item>
+                            <color>FF0000</color>
+                            <item>
+                                <host>Docker Monitoring</host>
+                                <key>docker.container.cpu[zabbix-server]</key>
+                            </item>
+                        </graph_item>
+                        <graph_item>
+                            <color>00FF00</color>
+                            <item>
+                                <host>Docker Monitoring</host>
+                                <key>docker.container.cpu[zabbix-mysql]</key>
+                            </item>
+                        </graph_item>
+                        <graph_item>
+                            <color>0000FF</color>
+                            <item>
+                                <host>Docker Monitoring</host>
+                                <key>docker.container.cpu[zabbix-grafana]</key>
+                            </item>
+                        </graph_item>
+                    </graph_items>
+                </graph>
+
+                <graph>
+                    <uuid>graph-container-memory</uuid>
+                    <name>Container Memory Usage</name>
+                    <width>900</width>
+                    <height>200</height>
+                    <graph_items>
+                        <graph_item>
+                            <color>FF0000</color>
+                            <item>
+                                <host>Docker Monitoring</host>
+                                <key>docker.container.memory[zabbix-server]</key>
+                            </item>
+                        </graph_item>
+                        <graph_item>
+                            <color>00FF00</color>
+                            <item>
+                                <host>Docker Monitoring</host>
+                                <key>docker.container.memory[zabbix-mysql]</key>
+                            </item>
+                        </graph_item>
+                        <graph_item>
+                            <color>0000FF</color>
+                            <item>
+                                <host>Docker Monitoring</host>
+                                <key>docker.container.memory[zabbix-grafana]</key>
+                            </item>
+                        </graph_item>
+                    </graph_items>
+                </graph>
+            </graphs>
+        </template>
+    </templates>
+</zabbix_export>

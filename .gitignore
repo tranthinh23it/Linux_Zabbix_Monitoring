@@ -1,0 +1,70 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# SSL certificates
+ssl/*.key
+ssl/*.crt
+ssl/*.pem
+
+# Backup files
+backup/*.tar.gz
+backup/*.sql
+backup/*/
+
+# Logs
+logs/
+*.log
+
+# Docker volumes data
+mysql_data/
+zabbix_server_data/
+grafana_data/
+redis_data/
+elasticsearch_data/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (if any)
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Zabbix specific
+configs/zabbix/zabbix_server.conf.bak
+configs/zabbix/alertscripts/*.log
+configs/zabbix/externalscripts/*.log
+
+# Grafana
+configs/grafana/grafana.db
+
+# Elasticsearch
+configs/elasticsearch/data/
+
+# Fluentd
+configs/fluentd/log/
+
+# Docker
+.docker/
+
+# Secrets
+secrets/
+*.secret

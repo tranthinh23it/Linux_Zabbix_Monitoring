@@ -1,0 +1,75 @@
+version: '3.8'
+
+# Production overrides
+services:
+  mysql-server:
+    environment:
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - /opt/zabbix/mysql:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+
+  zabbix-server:
+    environment:
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      ZBX_CACHESIZE: 32M
+      ZBX_HISTORYCACHESIZE: 64M
+      ZBX_TRENDCACHESIZE: 16M
+      ZBX_VALUECACHESIZE: 32M
+    volumes:
+      - /opt/zabbix/server:/var/lib/zabbix
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+
+  zabbix-web:
+    environment:
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      ZBX_MEMORYLIMIT: 512M
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+  grafana:
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_SERVER_DOMAIN: ${DOMAIN_NAME}
+      GF_SERVER_ROOT_URL: https://${DOMAIN_NAME}/grafana/
+    volumes:
+      - /opt/zabbix/grafana:/var/lib/grafana
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+  nginx-proxy:
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
+
+  elasticsearch:
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes:
+      - /opt/zabbix/elasticsearch:/usr/share/elasticsearch/data
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'

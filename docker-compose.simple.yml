@@ -1,0 +1,167 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql-server:
+    image: mysql:8.0
+    container_name: zabbix-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-zabbix_secure_2024}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secure_2024}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./configs/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - zabbix-net
+    ports:
+      - "3306:3306"
+    command: 
+      - mysqld
+      - --character-set-server=utf8
+      - --collation-server=utf8_bin
+      - --default-authentication-plugin=mysql_native_password
+
+  # Zabbix Server
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:alpine-6.4-latest
+    container_name: zabbix-server
+    restart: unless-stopped
+    environment:
+      DB_SERVER_HOST: mysql-server
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-zabbix_secure_2024}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secure_2024}
+      ZBX_ENABLE_SNMP_TRAPS: "true"
+      ZBX_STARTPOLLERS: 5
+      ZBX_STARTPOLLERSUNREACHABLE: 1
+      ZBX_STARTTRAPPERS: 5
+      ZBX_STARTPINGERS: 1
+      ZBX_STARTDISCOVERERS: 1
+      ZBX_STARTHTTPPOLLERS: 1
+      ZBX_STARTTIMERS: 1
+      ZBX_STARTESCALATORS: 1
+      ZBX_STARTALERTERS: 3
+      ZBX_CACHESIZE: 32M
+      ZBX_CACHEUPDATEFREQUENCY: 60
+      ZBX_STARTDBSYNCERS: 4
+      ZBX_HISTORYCACHESIZE: 64M
+      ZBX_HISTORYINDEXCACHESIZE: 8M
+      ZBX_TRENDCACHESIZE: 16M
+      ZBX_VALUECACHESIZE: 32M
+    volumes:
+      - zabbix_server_data:/var/lib/zabbix
+      - ./configs/zabbix/alertscripts:/usr/lib/zabbix/alertscripts
+      - ./configs/zabbix/externalscripts:/usr/lib/zabbix/externalscripts
+      - ./ssl:/var/lib/zabbix/ssl
+    networks:
+      - zabbix-net
+    ports:
+      - "10051:10051"
+    depends_on:
+      - mysql-server
+
+  # Zabbix Web Interface
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-mysql:alpine-6.4-latest
+    container_name: zabbix-web
+    restart: unless-stopped
+    environment:
+      ZBX_SERVER_HOST: zabbix-server
+      DB_SERVER_HOST: mysql-server
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-zabbix_secure_2024}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secure_2024}
+      PHP_TZ: Asia/Ho_Chi_Minh
+      ZBX_SERVER_NAME: "Zabbix Monitoring System"
+      ZBX_MAXEXECUTIONTIME: 600
+      ZBX_MEMORYLIMIT: 512M
+      ZBX_POSTMAXSIZE: 32M
+      ZBX_UPLOADMAXFILESIZE: 16M
+      ZBX_MAXINPUTTIME: 300
+    volumes:
+      - ./ssl:/etc/ssl/nginx
+    networks:
+      - zabbix-net
+    ports:
+      - "80:8080"
+      - "443:8443"
+    depends_on:
+      - mysql-server
+      - zabbix-server
+
+  # Zabbix Agent (for monitoring Zabbix server itself)
+  zabbix-agent:
+    image: zabbix/zabbix-agent:alpine-6.4-latest
+    container_name: zabbix-agent-server
+    restart: unless-stopped
+    environment:
+      ZBX_HOSTNAME: "Zabbix Server"
+      ZBX_SERVER_HOST: zabbix-server
+      ZBX_SERVER_PORT: 10051
+      ZBX_PASSIVE_ALLOW: "true"
+      ZBX_ACTIVE_ALLOW: "true"
+      ZBX_DEBUGLEVEL: 3
+      ZBX_TIMEOUT: 4
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /dev:/host/dev:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - zabbix-net
+    ports:
+      - "10050:10050"
+    privileged: true
+    pid: host
+    depends_on:
+      - zabbix-server
+
+  # Grafana for advanced visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: zabbix-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+      GF_INSTALL_PLUGINS: alexanderzobnin-zabbix-app
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: alexanderzobnin-zabbix-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning
+      - ./dashboards/grafana:/var/lib/grafana/dashboards
+    networks:
+      - zabbix-net
+    ports:
+      - "3000:3000"
+    depends_on:
+      - zabbix-server
+
+  # Redis for caching
+  redis:
+    image: redis:alpine
+    container_name: zabbix-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - zabbix-net
+    ports:
+      - "6379:6379"
+
+volumes:
+  mysql_data:
+  zabbix_server_data:
+  grafana_data:
+  redis_data:
+
+networks:
+  zabbix-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
