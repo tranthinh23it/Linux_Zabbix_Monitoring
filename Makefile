@@ -19,6 +19,11 @@ help:
 	@echo "  make logs           - Show logs from all services"
 	@echo "  make health         - Check system health"
 	@echo ""
+	@echo "Email Alerts:"
+	@echo "  make quick-email    - Quick email setup (interactive)"
+	@echo "  make setup-email    - Full email setup with guide"
+	@echo "  make test-email     - Test email sending"
+	@echo ""
 	@echo "Production:"
 	@echo "  make prod-start     - Start in production mode"
 	@echo "  make prod-stop      - Stop production services"
@@ -37,6 +42,8 @@ help:
 	@echo ""
 	@echo "Examples:"
 	@echo "  make setup"
+	@echo "  make quick-email"
+	@echo "  make test-email"
 	@echo "  make deploy-agent IP=192.168.1.100 USER=ubuntu SERVER=192.168.1.50"
 	@echo "  make restore FILE=backup/zabbix_backup_20240101_120000.tar.gz"
 
@@ -66,7 +73,12 @@ demo:
 	@echo "🎯 Running quick demo..."
 	@./scripts/quick-demo.sh
 
-# Setup email alerts
+# Setup email alerts (quick interactive)
+quick-email:
+	@echo "📧 Quick email alert setup..."
+	@./scripts/quick-email-setup.sh
+
+# Setup email alerts (full setup)
 setup-email:
 	@echo "📧 Setting up email alerts..."
 	@./scripts/setup-email-alerts.sh
